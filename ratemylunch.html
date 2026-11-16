@@ -38,49 +38,154 @@
     <section>
         <h1 class="center-heading"> Share Your Lunch! </h1>
 
-        <form>
-            <div class="form-group" style="margin: .5em 1.25em">
-                <label for="FormControlSelect1">Lunch Type</label>
-                <select class="form-control" id="FormControlSelect1">
-                    <option>Homemade</option>
-                    <option>Location Review</option>
-                </select>
-            </div>
-            <div class="form-group" style="margin: .5em 1.25em">
-                <label for="FormControlSelect1">Rating</label>
-                <fieldset class="star-rating">
+        <form id="lunchForm">
+    <div class="form-group" style="margin: .5em 1.25em">
+        <label for="lunchType">Lunch Type</label>
+        <select class="form-control" id="lunchType" name="lunchType" required>
+            <option value="Homemade">Homemade</option>
+            <option value="Location Review">Location Review</option>
+        </select>
+    </div>
 
-                    <input type="radio" id="star5" name="rating" value="5" />
-                    <label for="star5" title="5 stars">&#9733;</label>
+    <div class="form-group" style="margin: .5em 1.25em">
+        <label>Rating</label>
+        <fieldset class="star-rating">
+            <input type="radio" id="star5" name="rating" value="5" required />
+            <label for="star5" title="5 stars">&#9733;</label>
 
-                    <input type="radio" id="star4" name="rating" value="4" />
-                    <label for="star4" title="4 stars">&#9733;</label>
+            <input type="radio" id="star4" name="rating" value="4" />
+            <label for="star4" title="4 stars">&#9733;</label>
 
-                    <input type="radio" id="star3" name="rating" value="3" />
-                    <label for="star3" title="3 stars">&#9733;</label>
+            <input type="radio" id="star3" name="rating" value="3" />
+            <label for="star3" title="3 stars">&#9733;</label>
 
-                    <input type="radio" id="star2" name="rating" value="2" />
-                    <label for="star2" title="2 stars">&#9733;</label>
+            <input type="radio" id="star2" name="rating" value="2" />
+            <label for="star2" title="2 stars">&#9733;</label>
 
-                    <input type="radio" id="star1" name="rating" value="1" />
-                    <label for="star1" title="1 star">&#9733;</label>
-                </fieldset>
-            </div>
-        <div class="form-group" style="margin: .5em 1.25em">
-        <label for="Message">Description</label>
-                <textarea class=form-control id="message" rows="8" style= "width: 350px" placeholder="Tell us! What is that special thing about your lunch!"></textarea>
+            <input type="radio" id="star1" name="rating" value="1" />
+            <label for="star1" title="1 star">&#9733;</label>
+        </fieldset>
+    </div>
+
+    <div class="form-group" style="margin: .5em 1.25em">
+        <label for="message">Description</label>
+        <textarea
+            class="form-control"
+            id="message"
+            name="description"
+            rows="8"
+            style="width: 350px"
+            placeholder="Tell us! What is that special thing about your lunch!"
+            required></textarea>
+    </div>
+
+        <div class="form-group" style="width: 80%; margin: .5em 1.25em">
+        <label for="photo">Choose an image:</label>
+        <input
+            type="file"
+            id="photo"
+            name="photo"
+            accept="image/*"
+            required>
         </div>
-        <div class="form-group" style="width: 80%; margin: .5em 1.25em" action="/upload" method="POST" enctype="multipart/form-data">
-            <label for="photo">Choose an image:</label>
-            <input type="file" id="photo" name="photo" accept="image/*" required>
-        </div>
-        <button type="submit" class="btn btn-primary" style="background-color; margin: .5em 2em">Submit</button>
-        </form>
+
+        <button type="submit" class="btn btn-primary"
+        style="margin: .5em 2em">
+        Submit
+        </button>
+
+        <p id="formMessage" role="status"></p>
+    </form>
     </section>
 
         <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        
+        
+<!-- Supabase library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+    // Replace these with your Supabase project details.
+    const SUPABASE_URL = "https://blxdhohzqobouvieirma.supabase.co;
+    const SUPABASE_KEY = "sb_publishable_2M3_O9Pr1V4cOtXKKrh73g_N5Eckx2F";
+
+    const supabaseClient = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+    const form = document.getElementById("lunchForm");
+    const formMessage = document.getElementById("formMessage");
+
+    form.addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        formMessage.textContent = "Submitting your lunch...";
+
+        try {
+            const lunchType = document.getElementById("lunchType").value;
+            const rating = form.querySelector('input[name="rating"]:checked')?.value;
+            const description = document.getElementById("message").value;
+            const photo = document.getElementById("photo").files[0];
+
+            if (!rating || !photo) {
+                throw new Error("Please select a rating and upload a photo.");
+            }
+
+            if (!photo.type.startsWith("image/")) {
+                throw new Error("Please upload an image file.");
+            }
+
+            if (photo.size > 5 * 1024 * 1024) {
+                throw new Error("Please choose an image smaller than 5 MB.");
+            }
+
+            // Give the image a unique filename.
+            const filePath = crypto.randomUUID() + "-" +
+                photo.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+
+            // Upload the photo.
+            const { error: uploadError } = await supabaseClient
+                .storage
+                .from("lunch-photos")
+                .upload(filePath, photo, {
+                    contentType: photo.type
+                });
+
+            if (uploadError) throw uploadError;
+
+            // Save the lunch information.
+            const { error: insertError } = await supabaseClient
+                .from("lunch_submissions")
+                .insert({
+                    lunch_type: lunchType,
+                    rating: Number(rating),
+                    description: description,
+                    image_path: filePath,
+                    status: "pending"
+                });
+
+            if (insertError) throw insertError;
+
+            formMessage.textContent =
+                "Your lunch was submitted successfully! Thank you!";
+
+            form.reset();
+
+        } catch (error) {
+            console.error(error);
+            formMessage.textContent =
+                "Something went wrong: " + error.message;
+        } finally {
+            submitButton.disabled = false;
+        }
+    });
+</script>
+
 
     </body>
 </html>
