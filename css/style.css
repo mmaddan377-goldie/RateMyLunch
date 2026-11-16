@@ -1,0 +1,163 @@
+body{
+    background-color: #fff4c8;
+    font-weight: 200;
+    font-size: 24px;
+    font-style: normal;
+}
+
+.hero{
+    display: flex;
+    background: #ffffff;
+    justify-content: center;
+    align-items: center;
+    width: auto;
+    margin: 0 auto;
+}
+
+.checked {
+    color: orange;
+}
+
+.center-heading{
+    font-weight: 600;
+    font-style: strong;
+    font-size: 56px;
+    justify-content: center;
+    text-align: center;
+    padding: .5em 0 0 0;
+    color: #000000;
+    display: flex;
+}
+
+.page {
+    font-size: 24px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 1000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 3em;
+}
+
+.image-wrapper {
+    display: inline-block;   /* matches image width */
+    position: relative;
+    max-width: 300px;
+}
+
+.image-wrapper img{
+    width: 100%;
+    display: block;
+}
+
+.carousel-image {
+  display: block;
+  justify-content: center;
+  max-width: 100%;
+}
+
+.carousel-image-wrapper{
+    position: relative;
+    height: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.carousel-image-wrapper .carousel-image {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.custom-carousel-item {
+  text-align: center;
+}
+
+.glass-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    font-weight: 900;
+    color: black;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.carousel-image-wrapper .carousel-caption {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 100%;
+  max-width: 500px;
+
+  background: rgba(255, 255, 255, 0.8);
+  color: black;
+  text-align: center;
+  padding: 1rem;
+}
+
+.caption-text{
+    font-weight: 200;
+    font-size: 21px;
+    font-style: normal;
+    padding: .5em 0 1em 1.5em;
+}
+
+.carousel-image{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: auto;
+    margin: 0 auto;
+}
+
+.star-rating {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    border: none;
+    padding: 0;
+  }
+
+  /* Visually hide radio inputs while keeping them accessible to screen readers */
+  .star-rating input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+
+  .star-rating label {
+    font-size: 2.5rem;
+    color: #ccc;
+    cursor: pointer;
+    padding: 0 0.1em;
+    transition: color 0.15s ease-in-out;
+  }
+
+  /* Highlight hovered star, selected star, and all preceding stars */
+  .star-rating input:checked ~ label,
+  .star-rating label:hover,
+  .star-rating label:hover ~ label {
+    color: #f5b301;
+  }
+
+  /* Keyboard focus indicator for accessibility */
+  .star-rating input:focus-visible + label {
+    outline: 2px solid #005fcc;
+    border-radius: 4px;
+  }
+
+.form-group{
+    color: #ffffff;
+    border-radius: 10px;
+    background-color: #003e27;
+    padding: .25em;
+    width: max-content;
+    display: flex;
+    flex-direction: column;
+}
