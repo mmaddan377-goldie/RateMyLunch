@@ -52,16 +52,24 @@
             </section>
 
         </div>
-        <script>
-            
-        const SUPABASE_URL = "https://blxdhohzqobouvieirma.supabase.co";
-    const SUPABASE_KEY = "sb_publishablgite_2M3_O9Pr1V4cOtXKKrh73g_N5Eckx2F";
+
+<!-- Load the Supabase library FIRST -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+<!-- Initialize Supabase SECOND -->
+<script>
+    console.log("Supabase library:", window.supabase);
+
+    const SUPABASE_URL = "https://blxdhohzqobouvieirma.supabase.co";
+    const SUPABASE_KEY = "YOUR_PUBLISHABLE_KEY";
 
     const supabaseClient = window.supabase.createClient(
         SUPABASE_URL,
         SUPABASE_KEY
     );
-        </script>
+
+    console.log("Supabase client initialized!");
+</script>
         <script>
                 
 async function loadLunchWall() {
