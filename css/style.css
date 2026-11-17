@@ -161,3 +161,46 @@ body{
     display: flex;
     flex-direction: column;
 }
+
+.lunch-wall {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    padding: 20px 0;
+}
+
+.lunch-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    transition: transform 0.2s ease;
+}
+
+.lunch-card:hover {
+    transform: translateY(-5px);
+}
+
+.lunch-card img {
+    width: 100%;
+    height: 230px;
+    object-fit: cover;
+}
+
+.lunch-card-content {
+    padding: 18px;
+}
+
+.lunch-card h4 {
+    margin-bottom: 8px;
+}
+
+.lunch-rating {
+    color: #e5a900;
+    font-size: 22px;
+}
+
+.lunch-date {
+    color: #777;
+    font-size: 13px;
+}
