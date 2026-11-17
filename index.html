@@ -37,6 +37,13 @@
                 <li class="nav-item" id="logoutNav" style="display: none;">
                     <a class="nav-link" href="#" id="logoutButton">Sign Out</a>
                 </li>
+                <li class="nav-item" id="profileNav" style="display: none;">
+                    <div class="d-flex align-items-center">
+                        <img id="profilePicture" src="img/default-profile.png" alt="Profile"
+                             style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+                        <span id="profileName" class="nav-link"></span>
+                    </div>
+                </li>
             </ul>
         </div>
     </nav>
@@ -118,16 +125,40 @@
         "sb_publishable_2M3_O9Pr1V4cOtXKKrh73g_N5Eckx2F"
     );
 
-    async function updateLoginNavigation() {
-        const { data: { session } } =
-            await authClient.auth.getSession();
-
-        document.getElementById("loginNav").style.display =
-            session ? "none" : "";
-
-        document.getElementById("logoutNav").style.display =
-            session ? "" : "none";
+    
+async function updateLoginNavigation(session) {
+    // Get the current session when the function is first loaded
+    if (typeof session === "undefined") {
+        const { data } = await authClient.auth.getSession();
+        session = data.session;
     }
+
+    const loggedIn = !!session;
+
+    document.getElementById("loginNav").style.display =
+        loggedIn ? "none" : "";
+
+    document.getElementById("logoutNav").style.display =
+        loggedIn ? "" : "none";
+
+    document.getElementById("profileNav").style.display =
+        loggedIn ? "" : "none";
+
+    if (loggedIn) {
+        const user = session.user;
+        const metadata = user.user_metadata || {};
+
+        // Display Google profile name
+        document.getElementById("profileName").textContent =
+            metadata.full_name || metadata.name || user.email;
+
+        // Display Google profile picture
+        document.getElementById("profilePicture").src =
+            metadata.avatar_url || metadata.picture ||
+            "img/default-profile.png";
+    }
+}
+
 
     document.getElementById("logoutButton").addEventListener("click", async function (event) {
         event.preventDefault();
@@ -144,8 +175,8 @@
 
     updateLoginNavigation();
 
-    authClient.auth.onAuthStateChange(() => {
-        updateLoginNavigation();
+    authClient.auth.onAuthStateChange((event, session) => {
+    updateLoginNavigation(session);
     });
 </script>
 
