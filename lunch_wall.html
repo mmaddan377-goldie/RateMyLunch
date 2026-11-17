@@ -147,7 +147,7 @@ async function loadLunchWall() {
         // 2. Get approved lunch submissions
         const { data, error } = await supabaseClient
             .from("lunch_submissions")
-            .select("id, lunch_type, rating, description, image_path, created_at")
+            .select("id, name, lunch_type, rating, description, image_path, created_at") created_at")
             .eq("status", "approved")
             .order("created_at", { ascending: false })
             .limit(12);
@@ -213,7 +213,7 @@ async function loadLunchWall() {
             content.className = "lunch-card-content";
 
             const title = document.createElement("h4");
-            title.textContent = lunch.lunch_type;
+            title.textContent = lunch.name || "Untitled Dish";
 
             const rating = document.createElement("div");
             rating.className = "lunch-rating";
