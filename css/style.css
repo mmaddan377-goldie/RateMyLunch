@@ -204,3 +204,24 @@ body{
     color: #777;
     font-size: 13px;
 }
+
+.like-button {
+    background: #003e27;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    margin-top: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s ease;
+}
+
+.like-button:hover {
+    background: #00613c;
+}
+
+.like-button.liked {
+    background: #e5a900;
+    color: black;
+}
