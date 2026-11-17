@@ -210,6 +210,69 @@
 
     loadMyLunches();
 </script>
+    
+    <script>
+    
+const authClient = window.supabase.createClient(
+    "https://blxdhohzqobouvieirma.supabase.co",
+    "sb_publishable_2M3_O9Pr1V4cOtXKKrh73g_N5Eckx2F"
+);
+
+async function updateLoginNavigation(session) {
+
+    if (typeof session === "undefined") {
+        const { data, error } = await authClient.auth.getSession();
+
+        if (error) {
+            console.error(error);
+            return;
+        }
+
+        session = data.session;
+    }
+
+    const loggedIn = !!session;
+
+    document.getElementById("loginNav").style.display =
+        loggedIn ? "none" : "";
+
+    document.getElementById("profileNav").style.display =
+        loggedIn ? "" : "none";
+
+    if (loggedIn) {
+        const user = session.user;
+        const metadata = user.user_metadata || {};
+
+        document.getElementById("profileName").textContent =
+            metadata.full_name || metadata.name || user.email;
+
+        document.getElementById("profilePicture").src =
+            metadata.avatar_url ||
+            metadata.picture ||
+            "img/default-profile.png";
+    }
+}
+
+document.getElementById("logoutButton").addEventListener("click", async function(event) {
+    event.preventDefault();
+
+    const { error } = await authClient.auth.signOut();
+
+    if (error) {
+        alert(error.message);
+        return;
+    }
+
+    window.location.reload();
+});
+
+updateLoginNavigation();
+
+authClient.auth.onAuthStateChange((event, session) => {
+    updateLoginNavigation(session);
+});
+
+</script>
 
 </body>
 </html>
