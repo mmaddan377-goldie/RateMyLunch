@@ -31,6 +31,12 @@
                 <li class="nav-item">
                     <a class="nav-link" href="lunch_wall.html">Lunch Wall</a>
                 </li>
+                <li class="nav-item" id="loginNav">
+                    <a class="nav-link" href="login.html">Sign In</a>
+                </li>
+                <li class="nav-item" id="logoutNav" style="display: none;">
+                    <a class="nav-link" href="#" id="logoutButton">Sign Out</a>
+                </li>
             </ul>
         </div>
     </nav>
@@ -188,8 +194,43 @@
 
     loadPristinePlates();
 </script>
-</body>
-</html>
+        
+        <script>
+    const authClient = window.supabase.createClient(
+        "https://blxdhohzqobouvieirma.supabase.co",
+        "sb_publishable_2M3_O9Pr1V4cOtXKKrh73g_N5Eckx2F"
+    );
+
+    async function updateLoginNavigation() {
+        const { data: { session } } =
+            await authClient.auth.getSession();
+
+        document.getElementById("loginNav").style.display =
+            session ? "none" : "";
+
+        document.getElementById("logoutNav").style.display =
+            session ? "" : "none";
+    }
+
+    document.getElementById("logoutButton").addEventListener("click", async function (event) {
+        event.preventDefault();
+
+        const { error } = await authClient.auth.signOut();
+
+        if (error) {
+            alert(error.message);
+            return;
+        }
+
+        window.location.reload();
+    });
+
+    updateLoginNavigation();
+
+    authClient.auth.onAuthStateChange(() => {
+        updateLoginNavigation();
+    });
+</script>
 
 
     </body>
