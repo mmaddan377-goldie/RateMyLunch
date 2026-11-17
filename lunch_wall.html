@@ -87,6 +87,7 @@ if (!visitorId) {
 }
                 
 
+
 async function loadLunchWall() {
     const wall = document.getElementById("lunchWall");
     const message = document.getElementById("wallMessage");
@@ -94,7 +95,15 @@ async function loadLunchWall() {
     wall.textContent = "Loading lunches...";
 
     try {
-        // 1. Get approved lunch submissions
+        // 1. Check whether the visitor is signed in
+        const { data: { session }, error: sessionError } =
+            await supabaseClient.auth.getSession();
+
+        if (sessionError) throw sessionError;
+
+        const userId = session?.user?.id || null;
+
+        // 2. Get approved lunch submissions
         const { data, error } = await supabaseClient
             .from("lunch_submissions")
             .select("id, lunch_type, rating, description, image_path, created_at")
@@ -111,18 +120,18 @@ async function loadLunchWall() {
             return;
         }
 
-        // 2. Get IDs for the displayed lunches
+        // 3. Get IDs for displayed lunches
         const lunchIds = data.map(lunch => lunch.id);
 
-        // 3. Retrieve existing likes
+        // 4. Retrieve existing likes
         const { data: likes, error: likesError } = await supabaseClient
             .from("lunch_likes")
-            .select("submission_id, visitor_id")
+            .select("submission_id, visitor_id, user_id")
             .in("submission_id", lunchIds);
 
         if (likesError) throw likesError;
 
-        // 4. Count likes for each lunch
+        // 5. Count likes
         const likeCounts = {};
 
         (likes || []).forEach(like => {
@@ -130,14 +139,20 @@ async function loadLunchWall() {
                 (likeCounts[like.submission_id] || 0) + 1;
         });
 
-        // 5. Find lunches this visitor has already liked
+        // 6. Identify lunches this visitor has liked
         const likedLunches = new Set(
             (likes || [])
-                .filter(like => like.visitor_id === visitorId)
+                .filter(like => {
+                    if (userId) {
+                        return like.user_id === userId;
+                    }
+
+                    return like.visitor_id === visitorId;
+                })
                 .map(like => like.submission_id)
         );
 
-        // 6. Create each lunch card
+        // 7. Create lunch cards
         data.forEach(lunch => {
 
             const { data: imageData } = supabaseClient
@@ -174,7 +189,7 @@ async function loadLunchWall() {
                 lunch.created_at
             ).toLocaleDateString();
 
-            // 7. Create the like button
+            // 8. Create like button
             const likeButton = document.createElement("button");
             likeButton.className = "like-button";
 
@@ -190,29 +205,42 @@ async function loadLunchWall() {
 
             updateLikeButton();
 
-            // 8. Like and unlike functionality
+            // 9. Like and unlike functionality
             likeButton.addEventListener("click", async () => {
                 likeButton.disabled = true;
 
                 try {
                     if (liked) {
-                        const { error } = await supabaseClient
+
+                        let deleteQuery = supabaseClient
                             .from("lunch_likes")
                             .delete()
-                            .eq("submission_id", lunch.id)
-                            .eq("visitor_id", visitorId);
+                            .eq("submission_id", lunch.id);
+
+                        if (userId) {
+                            deleteQuery = deleteQuery.eq("user_id", userId);
+                        } else {
+                            deleteQuery = deleteQuery.eq("visitor_id", visitorId);
+                        }
+
+                        const { error } = await deleteQuery;
 
                         if (error) throw error;
 
                         liked = false;
                         likeCount--;
+
                     } else {
+
+                        const newLike = {
+                            submission_id: lunch.id,
+                            visitor_id: userId ? null : visitorId,
+                            user_id: userId
+                        };
+
                         const { error } = await supabaseClient
                             .from("lunch_likes")
-                            .insert({
-                                submission_id: lunch.id,
-                                visitor_id: visitorId
-                            });
+                            .insert(newLike);
 
                         if (error) throw error;
 
@@ -230,7 +258,7 @@ async function loadLunchWall() {
                 }
             });
 
-            // 9. Add everything to the card
+            // 10. Add everything to the card
             content.append(title, rating, description, date, likeButton);
             card.append(img, content);
             wall.appendChild(card);
@@ -243,6 +271,7 @@ async function loadLunchWall() {
 }
 
 loadLunchWall();
+
 
         </script>
         
