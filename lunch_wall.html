@@ -96,7 +96,7 @@ async function loadLunchWall() {
 
         if (error) throw error;
         
-        const { data: likes, error: likesError } = await supabaseClient
+        supabaseClient
     .from("lunch_likes")
     .select("submission_id, visitor_id")
     .in("submission_id", lunchIds);
