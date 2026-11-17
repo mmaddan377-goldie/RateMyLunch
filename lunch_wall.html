@@ -141,13 +141,6 @@ likes.forEach(like => {
         (likeCounts[like.submission_id] || 0) + 1;
 });
 
-// Find lunches this visitor has already liked
-const likedLunches = new Set(
-    likes
-        .filter(like => like.visitor_id === visitorId)
-        .map(like => like.submission_id)
-);
-
         data.forEach(lunch => {
             const { data: imageData } = supabaseClient
                 .storage
