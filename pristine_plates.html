@@ -43,6 +43,17 @@
                 <div class="col caption" style="display: flex; justify-content: center; align-items: center; padding: .75em">
                     Pristine Plates
                     </div>
+                <section class="container my-5">
+                    <h2 class="text-center mb-4">🏆 The Pristine Plates Leaderboard</h2>
+
+                    <p class="text-center">
+                        The most loved lunches in the Rate My Lunch community!
+                    </p>
+
+                    <div id="pristinePlates" class="pristine-grid">
+                        <p>Loading the top-rated lunches...</p>
+                    </div>
+                </section>
 
                 </div>
             </div>
@@ -52,6 +63,134 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    
+<!-- Supabase JavaScript library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+<script>
+    // Initialize Supabase
+    const SUPABASE_URL = "https://blxdhohzqobouvieirma.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_2M3_O9Pr1V4cOtXKKrh73g_N5Eckx2F";
+
+    const supabaseClient = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+    // Load the Pristine Plates leaderboard
+    async function loadPristinePlates() {
+        const container = document.getElementById("pristinePlates");
+
+        try {
+            // Get approved lunches
+            const { data: lunches, error: lunchError } =
+                await supabaseClient
+                    .from("lunch_submissions")
+                    .select("id, lunch_type, rating, description, image_path, created_at")
+                    .eq("status", "approved");
+
+            if (lunchError) throw lunchError;
+
+            if (!lunches || lunches.length === 0) {
+                container.textContent = "No approved lunches yet!";
+                return;
+            }
+
+            // Get likes
+            const { data: likes, error: likesError } =
+                await supabaseClient
+                    .from("lunch_likes")
+                    .select("submission_id");
+
+            if (likesError) throw likesError;
+
+            // Count likes
+            const likeCounts = {};
+
+            (likes || []).forEach(like => {
+                likeCounts[like.submission_id] =
+                    (likeCounts[like.submission_id] || 0) + 1;
+            });
+
+            // Rank lunches by likes
+            const rankedLunches = lunches
+                .map(lunch => ({
+                    ...lunch,
+                    likes: likeCounts[lunch.id] || 0
+                }))
+                .sort((a, b) =>
+                    b.likes - a.likes ||
+                    new Date(b.created_at) - new Date(a.created_at)
+                )
+                .slice(0, 3);
+
+            container.replaceChildren();
+
+            // Display top three
+            rankedLunches.forEach((lunch, index) => {
+                const imageData = supabaseClient
+                    .storage
+                    .from("lunch-photos")
+                    .getPublicUrl(lunch.image_path);
+
+                const card = document.createElement("article");
+                card.className = "pristine-card";
+
+                const img = document.createElement("img");
+                img.src = imageData.data.publicUrl;
+                img.alt = "Community lunch submission";
+                img.loading = "lazy";
+
+                const content = document.createElement("div");
+                content.className = "pristine-card-content";
+
+                const rank = document.createElement("div");
+                rank.className = "pristine-rank";
+                rank.textContent = [
+                    "🥇 1st Place",
+                    "🥈 2nd Place",
+                    "🥉 3rd Place"
+                ][index];
+
+                const title = document.createElement("h3");
+                title.textContent = lunch.lunch_type;
+
+                const rating = document.createElement("div");
+                rating.className = "lunch-rating";
+                rating.textContent =
+                    "★".repeat(lunch.rating) +
+                    "☆".repeat(5 - lunch.rating);
+
+                const description = document.createElement("p");
+                description.textContent = lunch.description || "";
+
+                const likesText = document.createElement("p");
+                likesText.className = "pristine-likes";
+                likesText.textContent = "❤️ " + lunch.likes + " Likes";
+
+                content.append(
+                    rank,
+                    title,
+                    rating,
+                    description,
+                    likesText
+                );
+
+                card.append(img, content);
+                container.appendChild(card);
+            });
+
+        } catch (error) {
+            console.error("Pristine Plates error:", error);
+            container.textContent = "Unable to load the leaderboard.";
+        }
+    }
+
+    loadPristinePlates();
+</script>
+</body>
+</html>
+
 
     </body>
 </html>
