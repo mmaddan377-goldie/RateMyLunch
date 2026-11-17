@@ -150,7 +150,7 @@
 
             const { data, error } = await supabaseClient
                 .from("lunch_submissions")
-                .select("id, lunch_type, rating, description, image_path, status, created_at")
+                .select("id, name, lunch_type, rating, description, image_path, status, created_at")
                 .eq("user_id", session.user.id)
                 .order("created_at", { ascending: false });
 
@@ -180,7 +180,7 @@
                 image.loading = "lazy";
 
                 const title = document.createElement("h4");
-                title.textContent = lunch.lunch_type;
+                title.textContent = lunch.name || "Untitled Dish";
 
                 const rating = document.createElement("p");
                 rating.textContent =

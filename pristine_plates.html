@@ -133,7 +133,7 @@
             const { data: lunches, error: lunchError } =
                 await supabaseClient
                     .from("lunch_submissions")
-                    .select("id, lunch_type, rating, description, image_path, created_at")
+                    .select("id, name, lunch_type, rating, description, image_path, created_at")
                     .eq("status", "approved");
 
             if (lunchError) throw lunchError;
@@ -200,7 +200,7 @@
                 ][index];
 
                 const title = document.createElement("h3");
-                title.textContent = lunch.lunch_type;
+                title.textContent = lunch.name || "Untitled Dish";
 
                 const rating = document.createElement("div");
                 rating.className = "lunch-rating";
