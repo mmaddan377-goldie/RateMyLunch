@@ -80,6 +80,7 @@ if (!visitorId) {
     localStorage.setItem("lunchVisitorId", visitorId);
 }
                 
+
 async function loadLunchWall() {
     const wall = document.getElementById("lunchWall");
     const message = document.getElementById("wallMessage");
@@ -87,6 +88,7 @@ async function loadLunchWall() {
     wall.textContent = "Loading lunches...";
 
     try {
+        // 1. Get approved lunch submissions
         const { data, error } = await supabaseClient
             .from("lunch_submissions")
             .select("id, lunch_type, rating, description, image_path, created_at")
@@ -95,28 +97,6 @@ async function loadLunchWall() {
             .limit(12);
 
         if (error) throw error;
-        
-        supabaseClient
-    .from("lunch_likes")
-    .select("submission_id, visitor_id")
-    .in("submission_id", lunchIds);
-
-if (likesError) throw likesError;
-
-// Count likes for each lunch
-const likeCounts = {};
-
-likes.forEach(like => {
-    likeCounts[like.submission_id] =
-        (likeCounts[like.submission_id] || 0) + 1;
-});
-
-// Find lunches this visitor has already liked
-const likedLunches = new Set(
-    likes
-        .filter(like => like.visitor_id === visitorId)
-        .map(like => like.submission_id)
-);
 
         wall.replaceChildren();
 
@@ -124,24 +104,36 @@ const likedLunches = new Set(
             wall.textContent = "No approved lunches yet. Be the first!";
             return;
         }
-        
-        // Get IDs for all lunches currently displayed
-const lunchIds = data.map(lunch => lunch.id);
 
-// Get likes for those lunches
-const { data: likes, error: likesError } = await supabaseClient
-    .from("lunch_likes")
-    .select("submission_id, visitor_id")
-    .in("submission_id", lunchIds);
+        // 2. Get IDs for the displayed lunches
+        const lunchIds = data.map(lunch => lunch.id);
 
-if (likesError) throw likesError;
+        // 3. Retrieve existing likes
+        const { data: likes, error: likesError } = await supabaseClient
+            .from("lunch_likes")
+            .select("submission_id, visitor_id")
+            .in("submission_id", lunchIds);
 
-likes.forEach(like => {
-    likeCounts[like.submission_id] =
-        (likeCounts[like.submission_id] || 0) + 1;
-});
+        if (likesError) throw likesError;
 
+        // 4. Count likes for each lunch
+        const likeCounts = {};
+
+        (likes || []).forEach(like => {
+            likeCounts[like.submission_id] =
+                (likeCounts[like.submission_id] || 0) + 1;
+        });
+
+        // 5. Find lunches this visitor has already liked
+        const likedLunches = new Set(
+            (likes || [])
+                .filter(like => like.visitor_id === visitorId)
+                .map(like => like.submission_id)
+        );
+
+        // 6. Create each lunch card
         data.forEach(lunch => {
+
             const { data: imageData } = supabaseClient
                 .storage
                 .from("lunch-photos")
@@ -176,64 +168,66 @@ likes.forEach(like => {
                 lunch.created_at
             ).toLocaleDateString();
 
-            // Create like button
-const likeButton = document.createElement("button");
-likeButton.className = "like-button";
+            // 7. Create the like button
+            const likeButton = document.createElement("button");
+            likeButton.className = "like-button";
 
-let liked = likedLunches.has(lunch.id);
-let likeCount = likeCounts[lunch.id] || 0;
+            let liked = likedLunches.has(lunch.id);
+            let likeCount = likeCounts[lunch.id] || 0;
 
-function updateLikeButton() {
-    likeButton.textContent =
-        (liked ? "❤️" : "🤍") + " " + likeCount + " Likes";
+            function updateLikeButton() {
+                likeButton.textContent =
+                    (liked ? "❤️" : "🤍") + " " + likeCount + " Likes";
 
-    likeButton.classList.toggle("liked", liked);
-}
+                likeButton.classList.toggle("liked", liked);
+            }
 
-updateLikeButton();
+            updateLikeButton();
 
-likeButton.addEventListener("click", async () => {
-    likeButton.disabled = true;
+            // 8. Like and unlike functionality
+            likeButton.addEventListener("click", async () => {
+                likeButton.disabled = true;
 
-    try {
-        if (liked) {
-            const { error } = await supabaseClient
-                .from("lunch_likes")
-                .delete()
-                .eq("submission_id", lunch.id)
-                .eq("visitor_id", visitorId);
+                try {
+                    if (liked) {
+                        const { error } = await supabaseClient
+                            .from("lunch_likes")
+                            .delete()
+                            .eq("submission_id", lunch.id)
+                            .eq("visitor_id", visitorId);
 
-            if (error) throw error;
+                        if (error) throw error;
 
-            liked = false;
-            likeCount--;
-        } else {
-            const { error } = await supabaseClient
-                .from("lunch_likes")
-                .insert({
-                    submission_id: lunch.id,
-                    visitor_id: visitorId
-                });
+                        liked = false;
+                        likeCount--;
+                    } else {
+                        const { error } = await supabaseClient
+                            .from("lunch_likes")
+                            .insert({
+                                submission_id: lunch.id,
+                                visitor_id: visitorId
+                            });
 
-            if (error) throw error;
+                        if (error) throw error;
 
-            liked = true;
-            likeCount++;
-        }
+                        liked = true;
+                        likeCount++;
+                    }
 
-        updateLikeButton();
+                    updateLikeButton();
 
-    } catch (error) {
-        console.error("Like error:", error);
-        alert("Unable to update your like. Please try again.");
-    } finally {
-        likeButton.disabled = false;
-    }
-});
+                } catch (error) {
+                    console.error("Like error:", error);
+                    alert("Unable to update your like. Please try again.");
+                } finally {
+                    likeButton.disabled = false;
+                }
+            });
 
-content.append(title, rating, description, date, likeButton);
-card.append(img, content);
-wall.appendChild(card);
+            // 9. Add everything to the card
+            content.append(title, rating, description, date, likeButton);
+            card.append(img, content);
+            wall.appendChild(card);
         });
 
     } catch (error) {
