@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Rate My Lunch</title>
+
+    <!-- Bootstrap 4 -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+
+    <!-- Your existing stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <div class="container text-center my-5">
+        <h1>Welcome to Rate My Lunch!</h1>
+        <p>Sign in to connect with the lunch community.</p>
+
+        <button id="googleLogin" class="btn btn-dark">
+            Continue with Google
+        </button>
+
+        <p id="loginMessage" class="mt-3"></p>
+    </div>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    
+    
+<script>
+    // Initialize Supabase
+    const SUPABASE_URL = "https://blxdhohzqobouvieirma.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_2M3_O9Pr1V4cOtXKKrh73g_N5Eckx2F";
+
+    const supabaseClient = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+    // Google sign-in
+    document.getElementById("googleLogin").addEventListener("click", async function () {
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+                redirectTo: window.location.origin + "/index.html"
+            }
+        });
+
+        if (error) {
+            document.getElementById("loginMessage").textContent =
+                "Login error: " + error.message;
+        }
+    });
+</script>
+
+
+</body>
+</html>
