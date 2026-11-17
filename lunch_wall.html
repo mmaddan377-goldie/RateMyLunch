@@ -136,9 +136,6 @@ const { data: likes, error: likesError } = await supabaseClient
 
 if (likesError) throw likesError;
 
-// Count likes for each lunch
-const likeCounts = {};
-
 likes.forEach(like => {
     likeCounts[like.submission_id] =
         (likeCounts[like.submission_id] || 0) + 1;
